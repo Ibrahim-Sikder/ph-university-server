@@ -1,19 +1,31 @@
-import express, { Application, Request, Response } from 'express'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prefer-const */
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import express, { Application, NextFunction, Request, Response } from 'express'
 const app:Application = express()
 import cors from 'cors'
-import { studentRouters } from './app/modules/student/student.route'
+import { globalErrorHandler } from './app/middlwares/globalErrorHandler'
+import { notFound } from './app/middlwares/notFoundRoute'
+import router from './app/routes'
+
 
 //parsers
  app.use(express.json())
  app.use(cors())
 
  // application route
- app.use('/api/v1/students', studentRouters)
+ app.use('/api/v1', router)
+//  app.use('/api/v1/students', studentRouters)
+//  app.use('/api/v1/users', userRoutes)
 
 app.get('/', (req:Request, res:Response) => {
   res.send('Hello World!')
 })
 
+// not found route 
+app.use(notFound)
 
+app.use(globalErrorHandler)
 
 export default app;

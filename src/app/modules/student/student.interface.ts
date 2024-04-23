@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+import { Model, Types } from "mongoose"
 
  
 export type TUserName = {
@@ -24,6 +26,7 @@ export type TGuardian = {
 
 export type TStudent = {
   id:string,
+  user:Types.ObjectId,
   password: string,
   name:TUserName,
   gender: "male" | 'female' | 'other',
@@ -37,6 +40,23 @@ export type TStudent = {
   guardian:TGuardian,
   localGuardian:TLocalGuardian,
   profileImage?: string,
-  isActive: 'active' | 'blocked' ,
+  admissionSemester: Types.ObjectId,
+  // isActive: 'active' | 'blocked' ,
   isDeleted: boolean
 }
+
+//custom static method
+export interface StudentModel extends Model<TStudent> {
+  isUserExists(id:string): Promise<TStudent | null >
+}
+
+// custom instant method
+// export type StudentMethods = {
+//   isUserExists(id:string):Promise<TStudent | null >
+// }
+
+
+
+
+
+// export type StudentModel = Model<TStudent, Record<string, never>, StudentMethods>;

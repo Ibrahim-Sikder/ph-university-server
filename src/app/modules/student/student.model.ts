@@ -1,6 +1,14 @@
-import { Schema, model } from "mongoose"
-import { TGuardian, TLocalGuardian, TStudent, TUserName } from "./student.interface"
-
+/* eslint-disable @typescript-eslint/no-this-alias */
+import { Schema, model } from 'mongoose'
+import {
+  StudentModel,
+  TGuardian,
+  TLocalGuardian,
+  TStudent,
+  TUserName,
+} from './student.interface'
+import bcrypt from 'bcrypt'
+import config from '../../config'
 
 const userNameSchema = new Schema<TUserName>({
   firstName: { type: String, required: true },
@@ -24,15 +32,22 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   address: { type: String, required: true },
 })
 
-export const studentSchema = new Schema<TStudent>(
+export const studentSchema = new Schema<TStudent, StudentModel>(
   {
-    id: { type: String },
+    id: { type: String,unique: true },
+    user:{
+      type: Schema.Types.ObjectId,
+      required: [true, 'User id is required'],
+      unique: true,
+      ref:'User'
+    },
     password: {
       type: String,
     },
     name: userNameSchema,
     gender: {
       type: String,
+      required:true,
       enum: ['male', 'female', 'other'],
     },
     dateOfBirth: String,
@@ -48,17 +63,66 @@ export const studentSchema = new Schema<TStudent>(
     guardian: guardianSchema,
     localGuardian: localGuardianSchema,
     profileImage: { type: String },
-    isActive: {
-      type: String,
-      enum: ['active', 'blocked'],
+    admissionSemester:{
+      type : Schema.Types.ObjectId,
+      ref: 'AcademicSemester'
     },
+    // isActive: {
+    //   type: String,
+    //   enum: ['active', 'blocked'],
+    // },
     isDeleted: {
       type: Boolean,
       default: false,
     },
   },
-  
+  {
+    toJSON: {
+      virtuals: true,
+    },
+  },
 )
 
+studentSchema.virtual('fullName').get(function () {
+  return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`
+})
+//pre same middleware
+studentSchema.pre('save', async function (next) {
+  const user = this
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bcrypt_salt_round),
+  )
 
-export const StudentModel = model<TStudent>('Student', studentSchema)
+  next()
+})
+
+studentSchema.post('save', function (doc, next) {
+  doc.password = ''
+
+  next()
+})
+
+// query middleware
+studentSchema.pre('find', function (next) {
+  this.find({ isDeleted: { $ne: true } })
+  next()
+})
+studentSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } })
+  next()
+})
+
+// creating a custom static method
+studentSchema.statics.isUserExists = async function (id: string) {
+  const existingUser = await Student.findOne({ id })
+  return existingUser
+}
+
+// creating a custom instant method
+// studentSchema.methods.isUserExists = async function(id:string){
+//   const existingUser = await Student.findOne({id})
+//   return existingUser
+// }
+
+export const Student = model<TStudent, StudentModel>('Student', studentSchema)
