@@ -18,6 +18,7 @@ const createAcademicSemester = catchAsync(async (req, res) => {
 })
 
 const getAllAcademicSemester = catchAsync(async (req, res) => {
+  console.log(req.cookies)
   const result = await academicSemesterServices.getAllAcademicSemesterFromDB(
   )
 

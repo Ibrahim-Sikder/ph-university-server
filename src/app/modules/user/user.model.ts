@@ -3,13 +3,18 @@ import { Schema, model } from 'mongoose'
 import { TUser } from './user.interface'
 import config from '../../config'
 import bcrypt from 'bcrypt'
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<TUser >(
   {
     id: {
       type: String,
       required: true,
       unique:true,
     },
+    // email: {
+    //   type: String,
+    //   required: true,
+    //   unique:true,
+    // },
     password: {
       type: String,
     },

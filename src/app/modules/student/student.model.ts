@@ -43,6 +43,7 @@ export const studentSchema = new Schema<TStudent, StudentModel>(
     },
     password: {
       type: String,
+  
     },
     name: userNameSchema,
     gender: {
@@ -67,6 +68,10 @@ export const studentSchema = new Schema<TStudent, StudentModel>(
       type : Schema.Types.ObjectId,
       ref: 'AcademicSemester'
     },
+    academicDepartment: {
+      type: Schema.Types.ObjectId,
+      ref: 'AcademicDepartment',
+    },
     // isActive: {
     //   type: String,
     //   enum: ['active', 'blocked'],
@@ -84,7 +89,7 @@ export const studentSchema = new Schema<TStudent, StudentModel>(
 )
 
 studentSchema.virtual('fullName').get(function () {
-  return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`
+  return `${this?.name?.firstName} ${this?.name?.middleName} ${this?.name?.lastName}`
 })
 //pre same middleware
 studentSchema.pre('save', async function (next) {
